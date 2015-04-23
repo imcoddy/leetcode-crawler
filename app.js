@@ -6,21 +6,22 @@ var fs = require('fs');
 
 var baseUrl = 'https://leetcode.com';
 
-var problemUrls = [];
+var quizList = [];
 superagent.get(baseUrl + '/problemset/algorithms/')
     .end(function(err, res) {
         if (err) {
             return console.error(err);
         }
         var $ = cheerio.load(res.text);
-        $('#problemList tbody a').each(function(idx, element) {
-            var $element = $(element);
-            var href = url.resolve(baseUrl, $element.attr('href'));
-            problemUrls.push(href);
+        $('#problemList tbody tr').each(function(idx, element) {
+            var $url = $(element).find('a');
+            var href = url.resolve(baseUrl, $url.attr('href'));
+            var level = $(element).children('td').last().text();
+            quizList.push({'href': href, 'level': level});
         });
 
-        var fetchUrl = function(url, callback) {
-            superagent.get(url)
+        var processQuiz = function(quiz, callback) {
+            superagent.get(quiz.href)
                 .end(function(err, res) {
                     if (err) {
                         return console.error(err);
@@ -28,7 +29,8 @@ superagent.get(baseUrl + '/problemset/algorithms/')
 
                     $ = cheerio.load(res.text);
                     var result = {};
-                    result.href = url;
+                    result.href = quiz.href;
+                    result.level = quiz.level || 'Medium';
                     result.tags = [];
                     result.title = $(".question-title h3").text();
                     if ($('#tags')) {
@@ -48,9 +50,9 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                 });
         };
 
-        problemUrls = problemUrls.slice(0, 3); // TODO use for test. comment out this line
-        async.mapLimit(problemUrls, 3, function(url, callback) {
-            fetchUrl(url, callback);
+        quizList = quizList.slice(0, 3); // TODO use for test. comment out this line
+        async.mapLimit(quizList, 3, function(quiz, callback) {
+            processQuiz(quiz, callback);
         }, function(err, result) {
             console.log('Crawling finished.');
         });
@@ -69,6 +71,7 @@ function saveProblem(result) {
     wstream.write(' * Title:   ' + result.title + '\n');
     wstream.write(' * Auther:  @imcoddy\n');
     wstream.write(' * Tags:    [' + result.tags + ']\n');
+    wstream.write(' * Level:   ' + result.level + '\n');
     wstream.write(' * Content: ' + result.content + '\n');
     wstream.write(' */\n');
     wstream.write('\n');
