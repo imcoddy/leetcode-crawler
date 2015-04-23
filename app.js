@@ -2,6 +2,7 @@ var async = require('async');
 var superagent = require('superagent');
 var cheerio = require('cheerio');
 var url = require('url');
+var fs = require('fs');
 
 var baseUrl = 'https://leetcode.com';
 
@@ -35,8 +36,9 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                         result.tags.push($(e).text());
                     });
                     var code = $('#ajaxform .row .col-md-12').attr('ng-init');
-                    code = code.substring(5,code.length -9);
+                    code = code.substring(5, code.length - 9);
                     result.code = eval(code);
+                    saveProblem(result);
                     callback(null, result);
                 });
         };
@@ -45,7 +47,22 @@ superagent.get(baseUrl + '/problemset/algorithms/')
         async.mapLimit(problemUrls, 3, function(url, callback) {
             fetchUrl(url, callback);
         }, function(err, result) {
-            console.log('final:');
-            console.log(result);
+            console.log('Crawling finished.');
         });
     });
+
+
+function saveProblem(result) {
+    var url = result.href.split('/');
+    var filename = url[4];
+    var wstream = fs.createWriteStream('/tmp/test/' + filename + '.js');
+    wstream.write('/**\n');
+    wstream.write(' * source: ' + result.href + '\n');
+    wstream.write(' * title: ' + result.title + '\n');
+    wstream.write(' * auther: @imcoddy\n');
+    wstream.write(' * content : \n' + result.content + '\n');
+    wstream.write(' */\n');
+    wstream.write('\n');
+    wstream.write('' + result.code[5].defaultCode + '\n');
+    wstream.end();
+}
