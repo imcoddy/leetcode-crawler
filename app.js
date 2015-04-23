@@ -31,10 +31,15 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                     result.href = url;
                     result.tags = [];
                     result.title = $(".question-title h3").text();
+                    if ($('#tags')) {
+                        $('#tags').next().find('a').each(function(i, e) {
+                            result.tags.push($(e).text());
+                        });
+                        // remove tags from problem content. dirty trick but works
+                        $('#tags').next().remove();
+                        $('#tags').remove();
+                    }
                     result.content = $(".question-content").text();
-                    $('#tags').next().find('a').each(function(i, e) {
-                        result.tags.push($(e).text());
-                    });
                     var code = $('#ajaxform .row .col-md-12').attr('ng-init');
                     code = code.substring(5, code.length - 9);
                     result.code = eval(code);
@@ -56,13 +61,17 @@ function saveProblem(result) {
     var url = result.href.split('/');
     var filename = url[4];
     var wstream = fs.createWriteStream('/tmp/test/' + filename + '.js');
+    result.content = result.content.trim().replace(/(?:\r\n|\r|\n)/g, '\n * ').trim();
+    var code = result.code[5].defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
     wstream.write('/**\n');
-    wstream.write(' * source: ' + result.href + '\n');
-    wstream.write(' * title: ' + result.title + '\n');
-    wstream.write(' * auther: @imcoddy\n');
-    wstream.write(' * content : \n' + result.content + '\n');
+    wstream.write(' * Source:  ' + result.href + '\n');
+    wstream.write(' * Updated: ' +new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + '\n');
+    wstream.write(' * Title:   ' + result.title + '\n');
+    wstream.write(' * Auther:  @imcoddy\n');
+    wstream.write(' * Tags:    [' + result.tags + ']\n');
+    wstream.write(' * Content: ' + result.content + '\n');
     wstream.write(' */\n');
     wstream.write('\n');
-    wstream.write('' + result.code[5].defaultCode + '\n');
+    wstream.write('' + code + '\n');
     wstream.end();
 }
