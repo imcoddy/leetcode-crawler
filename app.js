@@ -3,6 +3,7 @@ var superagent = require('superagent');
 var cheerio = require('cheerio');
 var url = require('url');
 var fs = require('fs');
+var exec = require('child_process').exec;
 
 var baseUrl = 'https://leetcode.com';
 
@@ -70,6 +71,12 @@ superagent.get(baseUrl + '/problemset/algorithms/')
             }, 300 + 300 * Math.random());
         }, function(err, result) {
             console.log('Crawling finished.');
+            exec('./remove-space.sh', function(error, stdout, stderr) {
+                if (error) {
+                    console.log(error);
+                }
+                console.log('Processing finished.');
+            });
         });
     });
 
