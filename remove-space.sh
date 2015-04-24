@@ -1,4 +1,4 @@
-for f in `ls ./todo`
+for f in `ls ./problemset`
 do
-    sed -i '' -e's/[[:space:]]*$//' "./todo/$f"
+    sed -i '' -e's/[[:space:]]*$//' "./problemset/$f"
 done

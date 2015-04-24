@@ -52,6 +52,7 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                         result.content = $(".question-content").text();
                         var code = $('#ajaxform .row .col-md-12').attr('ng-init');
                         code = code.substring(code.indexOf('['), code.lastIndexOf(']') + 1);
+                        // retrieve default code by using eval, could be evil Orz
                         result.code = eval(code);
                         saveProblem(result);
                     } catch (e) {
@@ -84,7 +85,7 @@ superagent.get(baseUrl + '/problemset/algorithms/')
 function saveProblem(result) {
     var url = result.href.split('/');
     var filename = url[4];
-    var wstream = fs.createWriteStream('./todo/' + filename + '.js');
+    var wstream = fs.createWriteStream('./problemset/' + filename + '.js');
 
     var code = result.code[5].defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
     result.content = result.content.trim().replace(/(?:\r\n|\r|\n)/g, '\n * ').trim();
