@@ -93,7 +93,15 @@ function saveProblem(result) {
     var filename = url[4];
     var wstream = fs.createWriteStream('./problemset/' + filename + '.js');
 
-    var code = result.code[5].defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
+    var language = 'javascript';
+    var code = '';
+    for (var i = 0; i < result.code.length; i++) {
+        var elem = result.code[i];
+        if (elem.value === language) {
+            code = elem.defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
+            break;
+        }
+    }
     result.content = result.content.trim().replace(/(?:\r\n|\r|\n)/g, '\n * ').trim();
 
     wstream.write('/**\n');
