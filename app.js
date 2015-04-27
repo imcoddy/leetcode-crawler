@@ -76,7 +76,13 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                 if (error) {
                     console.log(error);
                 }
-                console.log('Processing finished.');
+                var log = 'Problem set updated at ' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + '\n';
+                fs.writeFile('./problemset/changelog.txt', log, function(err) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    console.log('Processing finished.');
+                });
             });
         });
     });
@@ -94,7 +100,7 @@ function saveProblem(result) {
     wstream.write(' * Source:  ' + result.href + '\n');
     wstream.write(' * Tags:    [' + result.tags + ']\n');
     wstream.write(' * Level:   ' + result.level + '\n');
-    wstream.write(' * Updated: ' + new Date().toISOString().substring(0, 10) + '\n');
+    //wstream.write(' * Updated: ' + new Date().toISOString().substring(0, 10) + '\n');
     wstream.write(' * Title:   ' + result.title + '\n');
     wstream.write(' * Auther:  @imcoddy\n');
     wstream.write(' * Content: ' + result.content + '\n');
