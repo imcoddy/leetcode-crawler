@@ -76,7 +76,13 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                 if (error) {
                     console.log(error);
                 }
-                console.log('Processing finished.');
+                var log = 'Problem set updated at ' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + '\n';
+                fs.writeFile('./problemset/changelog.txt', log, function(err) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    console.log('Processing finished.');
+                });
             });
         });
     });
@@ -87,14 +93,22 @@ function saveProblem(result) {
     var filename = url[4];
     var wstream = fs.createWriteStream('./problemset/' + filename + '.js');
 
-    var code = result.code[5].defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
+    var language = 'javascript';
+    var code = '';
+    for (var i = 0; i < result.code.length; i++) {
+        var elem = result.code[i];
+        if (elem.value === language) {
+            code = elem.defaultCode.replace(/(?:\r\n|\r|\n)/g, '\n').trim();
+            break;
+        }
+    }
     result.content = result.content.trim().replace(/(?:\r\n|\r|\n)/g, '\n * ').trim();
 
     wstream.write('/**\n');
     wstream.write(' * Source:  ' + result.href + '\n');
     wstream.write(' * Tags:    [' + result.tags + ']\n');
     wstream.write(' * Level:   ' + result.level + '\n');
-    wstream.write(' * Updated: ' + new Date().toISOString().substring(0, 10) + '\n');
+    //wstream.write(' * Updated: ' + new Date().toISOString().substring(0, 10) + '\n');
     wstream.write(' * Title:   ' + result.title + '\n');
     wstream.write(' * Auther:  @imcoddy\n');
     wstream.write(' * Content: ' + result.content + '\n');
