@@ -4,6 +4,7 @@ var cheerio = require('cheerio');
 var url = require('url');
 var fs = require('fs');
 var exec = require('child_process').exec;
+var config = require('./config.json');
 
 var baseUrl = 'https://leetcode.com';
 
@@ -64,7 +65,7 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                 });
         };
 
-        // quizList = quizList.slice(0, 3); // TODO use for test. comment out this line
+        //quizList = quizList.slice(0, 3); // TODO use for test. comment out this line
         console.log('Quiz count: ' + quizList.length);
         async.mapLimit(quizList, 2, function(quiz, callback) {
             setTimeout(function() {
@@ -87,13 +88,24 @@ superagent.get(baseUrl + '/problemset/algorithms/')
         });
     });
 
+function getFileExt(language) {
+    var map = {
+        'c': '.c',
+        'cpp': '.cpp',
+        'csharp': '.cs',
+        'java': '.java',
+        'javascript': '.js',
+        'python': '.py',
+    };
+    return map[language] || '.js';
+}
 
 function saveProblem(result) {
     var url = result.href.split('/');
     var filename = url[4];
-    var wstream = fs.createWriteStream('./problemset/' + filename + '.js');
+    var language = config.language || 'javascript';
+    var wstream = fs.createWriteStream('./problemset/' + filename + getFileExt(language));
 
-    var language = 'javascript';
     var code = '';
     for (var i = 0; i < result.code.length; i++) {
         var elem = result.code[i];
@@ -110,7 +122,7 @@ function saveProblem(result) {
     wstream.write(' * Level:   ' + result.level + '\n');
     //wstream.write(' * Updated: ' + new Date().toISOString().substring(0, 10) + '\n');
     wstream.write(' * Title:   ' + result.title + '\n');
-    wstream.write(' * Auther:  @imcoddy\n');
+    wstream.write(' * Auther:  ' + config.auther.name + '\n');
     wstream.write(' * Content: ' + result.content + '\n');
     wstream.write(' */\n');
     wstream.write('\n');
