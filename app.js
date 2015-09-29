@@ -51,7 +51,8 @@ superagent.get(baseUrl + '/problemset/algorithms/')
                             $('#tags').remove();
                         }
                         result.content = $(".question-content").text();
-                        var code = $('#ajaxform .row .col-md-12').attr('ng-init');
+                        var code = $('#ajaxform').attr('ng-init').split('\n');
+                        code = code[1].trim();
                         code = code.substring(code.indexOf('['), code.lastIndexOf(']') + 1);
                         // retrieve default code by using eval, could be evil Orz
                         result.code = eval(code);
